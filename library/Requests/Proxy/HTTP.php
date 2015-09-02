@@ -16,7 +16,7 @@
  * @subpackage Proxy
  * @since 1.6
  */
-class Requests_Proxy_HTTP implements Requests_Proxy {
+class Requests_Proxy_HTTP implements Requests_Proxy { //注册curl.before_send、fsockopen.remote_socket、fsockopen.remote_host_path、fsockopen.after_headers来处理Proxy。
 	/**
 	 * Proxy host and port
 	 *

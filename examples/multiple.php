@@ -31,7 +31,7 @@ function my_callback(&$request, $id) {
 
 // Tell Requests to use the callback
 $options = array(
-	'complete' => 'my_callback',
+	'complete' => 'my_callback', //多个请求的回调
 );
 
 // Send the request!

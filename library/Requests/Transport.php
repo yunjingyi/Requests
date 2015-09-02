@@ -25,7 +25,7 @@ interface Requests_Transport {
 	public function request($url, $headers = array(), $data = array(), $options = array());
 
 	/**
-	 * Send multiple requests simultaneously
+	 * Send multiple requests simultaneously同时
 	 *
 	 * @param array $requests Request data (array of 'url', 'headers', 'data', 'options') as per {@see Requests_Transport::request}
 	 * @param array $options Global options, see {@see Requests::response()} for documentation

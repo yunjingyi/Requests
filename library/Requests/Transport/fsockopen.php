@@ -12,7 +12,7 @@
  * @package Requests
  * @subpackage Transport
  */
-class Requests_Transport_fsockopen implements Requests_Transport {
+class Requests_Transport_fsockopen implements Requests_Transport { //ok
 	/**
 	 * Second to microsecond conversion
 	 *
@@ -95,14 +95,14 @@ class Requests_Transport_fsockopen implements Requests_Transport {
 		}
 
 		$proxy = isset( $options['proxy'] );
-		$proxy_auth = $proxy && isset( $options['proxy_username'] ) && isset( $options['proxy_password'] );
+		$proxy_auth = $proxy && isset( $options['proxy_username'] ) && isset( $options['proxy_password'] ); //proxy 处理
 
 		if (!isset($url_parts['port'])) {
 			$url_parts['port'] = 80;
 		}
 		$remote_socket .= ':' . $url_parts['port'];
 
-		set_error_handler(array($this, 'connect_error_handler'), E_WARNING | E_NOTICE);
+		set_error_handler(array($this, 'connect_error_handler'), E_WARNING | E_NOTICE); //错误处理
 
 		$options['hooks']->dispatch('fsockopen.remote_socket', array(&$remote_socket));
 
@@ -162,7 +162,7 @@ class Requests_Transport_fsockopen implements Requests_Transport {
 			case Requests::HEAD:
 			case Requests::GET:
 			case Requests::DELETE:
-				$path = self::format_get($url_parts, $data);
+				$path = self::format_get($url_parts, $data); //根据动词拼接header
 				$options['hooks']->dispatch('fsockopen.remote_host_path', array(&$path, $url));
 				$out = $options['type'] . " $path HTTP/1.0\r\n";
 				break;
@@ -221,7 +221,7 @@ class Requests_Transport_fsockopen implements Requests_Transport {
 					throw new Requests_Exception('fsocket timed out', 'timeout');
 				}
 
-				$this->headers .= fread($fp, 1160);
+				$this->headers .= fread($fp, 1160); //等待响应完成
 			}
 		}
 		else {

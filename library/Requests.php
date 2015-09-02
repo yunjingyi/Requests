@@ -52,7 +52,7 @@ class Requests {
 	 *
 	 * @var string
 	 */
-	const DELETE = 'DELETE';
+	const DELETE = 'DELETE'; //动词
 
 	/**
 	 * PATCH method
@@ -74,7 +74,7 @@ class Requests {
 	 *
 	 * @var array
 	 */
-	protected static $transports = array();
+	protected static $transports = array(); //传输类
 
 	/**
 	 * Selected transport name
@@ -83,7 +83,7 @@ class Requests {
 	 *
 	 * @var array
 	 */
-	public static $transport = array();
+	public static $transport = array(); //选定具体传输类
 
 	/**
 	 * This is a static class, do not instantiate it
@@ -104,7 +104,7 @@ class Requests {
 	 *
 	 * @param string $class Class name to load
 	 */
-	public static function autoloader($class) {
+	public static function autoloader($class) { //加载机制
 		// Check that the class starts with "Requests"
 		if (strpos($class, 'Requests') !== 0) {
 			return;
@@ -130,7 +130,7 @@ class Requests {
 	 *
 	 * @param string $transport Transport class to add, must support the Requests_Transport interface
 	 */
-	public static function add_transport($transport) {
+	public static function add_transport($transport) { //可添加自定义
 		if (empty(self::$transports)) {
 			self::$transports = array(
 				'Requests_Transport_cURL',
@@ -147,7 +147,7 @@ class Requests {
 	 * @throws Requests_Exception If no valid transport is found (`notransport`)
 	 * @return Requests_Transport
 	 */
-	protected static function get_transport($capabilities = array()) {
+	protected static function get_transport($capabilities = array()) { //capabilities  能力 get_transport根据$capabilities设置选择适用传输类
 		// Caching code, don't bother testing coverage
 		// @codeCoverageIgnoreStart
 		// array of capabilities as a string to be used as an array key
@@ -172,7 +172,7 @@ class Requests {
 			if (!class_exists($class))
 				continue;
 
-			$result = call_user_func(array($class, 'test'), $capabilities);
+			$result = call_user_func(array($class, 'test'), $capabilities); //测试能力
 			if ($result) {
 				self::$transport[$cap_string] = $class;
 				break;
@@ -181,8 +181,8 @@ class Requests {
 		if (self::$transport[$cap_string] === null) {
 			throw new Requests_Exception('No working transports found', 'notransport', self::$transports);
 		}
-		
-		return new self::$transport[$cap_string]();
+
+        return new self::$transport[$cap_string]();
 	}
 
 	/**#@+
@@ -195,7 +195,7 @@ class Requests {
 	/**
 	 * Send a GET request
 	 */
-	public static function get($url, $headers = array(), $options = array()) {
+	public static function get($url, $headers = array(), $options = array()) { //facade
 		return self::request($url, $headers, null, self::GET, $options);
 	}
 
@@ -257,7 +257,7 @@ class Requests {
 	 * The `$options` parameter takes an associative array with the following
 	 * options:
 	 *
-	 * - `timeout`: How long should we wait for a response?
+	 * - `timeout`: How long should we wait for a response? //响应超时
 	 *    (float, seconds with a millisecond precision, default: 10, example: 0.01)
 	 * - `connect_timeout`: How long should we wait while trying to connect?
 	 *    (float, seconds with a millisecond precision, default: 10, example: 0.01)
@@ -267,9 +267,9 @@ class Requests {
 	 *    (boolean, default: true)
 	 * - `redirects`: How many times should we redirect before erroring?
 	 *    (integer, default: 10)
-	 * - `blocking`: Should we block processing on this request?
+	 * - `blocking`: Should we block processing on this request? 阻塞。
 	 *    (boolean, default: true)
-	 * - `filename`: File to stream the body to instead.
+	 * - `filename`: File to stream the body to instead. stream化boby
 	 *    (string|boolean, default: false)
 	 * - `auth`: Authentication handler or array of user/password details to use
 	 *    for Basic authentication
@@ -309,18 +309,18 @@ class Requests {
 
 		self::set_defaults($url, $headers, $data, $type, $options);
 
-		$options['hooks']->dispatch('requests.before_request', array(&$url, &$headers, &$data, &$type, &$options));
+		$options['hooks']->dispatch('requests.before_request', array(&$url, &$headers, &$data, &$type, &$options)); //触发requests
 
 		if (!empty($options['transport'])) {
 			$transport = $options['transport'];
 
 			if (is_string($options['transport'])) {
-				$transport = new $transport();
+				$transport = new $transport(); //新建transport
 			}
 		} else {
 			$need_ssl = (0 === stripos($url, 'https://'));
 			$capabilities = array('ssl' => $need_ssl);
-			$transport = self::get_transport($capabilities);
+			$transport = self::get_transport($capabilities); //能处理ssl的transport
 		}
 		$response = $transport->request($url, $headers, $data, $options);
 
@@ -371,16 +371,16 @@ class Requests {
 	 * @return array Responses (either Requests_Response or a Requests_Exception object)
 	 */
 	public static function request_multiple($requests, $options = array()) {
-		$options = array_merge(self::get_default_options(true), $options);
+		$options = array_merge(self::get_default_options(true), $options); //合并
 
 		if (!empty($options['hooks'])) {
 			$options['hooks']->register('transport.internal.parse_response', array('Requests', 'parse_multiple'));
 			if (!empty($options['complete'])) {
 				$options['hooks']->register('multiple.request.complete', $options['complete']);
 			}
-		}
+		} //transport.internal.parse_response multiple.request.complete 2个hook
 
-		foreach ($requests as $id => &$request) {
+		foreach ($requests as $id => &$request) { //对每个请求进行hooks注册流程******。
 			if (!isset($request['headers'])) {
 				$request['headers'] = array();
 			}
@@ -445,13 +445,13 @@ class Requests {
 	 * @param boolean $multirequest Is this a multirequest?
 	 * @return array Default option values
 	 */
-	protected static function get_default_options($multirequest = false) {
+	protected static function get_default_options($multirequest = false) { //默认配置。
 		$defaults = array(
 			'timeout' => 10,
 			'connect_timeout' => 10,
-			'useragent' => 'php-requests/' . self::VERSION,
+			'useragent' => 'php-requests/' . self::VERSION, //标识为request组件，业务需替换。
 			'redirected' => 0,
-			'redirects' => 10,
+			'redirects' => 10, //length?
 			'follow_redirects' => true,
 			'blocking' => true,
 			'type' => self::GET,
@@ -459,14 +459,14 @@ class Requests {
 			'auth' => false,
 			'proxy' => false,
 			'cookies' => false,
-			'idn' => true,
+			'idn' => true, //idn略过
 			'hooks' => null,
 			'transport' => null,
-			'verify' => dirname( __FILE__ ) . '/Requests/Transport/cacert.pem',
+			'verify' => dirname( __FILE__ ) . '/Requests/Transport/cacert.pem', //业务需替换，多个pem。
 			'verifyname' => true,
 		);
 		if ($multirequest !== false) {
-			$defaults['complete'] = null;
+			$defaults['complete'] = null; //完成的请求。
 		}
 		return $defaults;
 	}
@@ -482,12 +482,12 @@ class Requests {
 	 * @return array $options
 	 */
 	protected static function set_defaults(&$url, &$headers, &$data, &$type, &$options) {
-		if (!preg_match('/^http(s)?:\/\//i', $url, $matches)) {
+		if (!preg_match('/^http(s)?:\/\//i', $url, $matches)) { //防护
 			throw new Requests_Exception('Only HTTP(S) requests are handled.', 'nonhttp', $url);
 		}
 
 		if (empty($options['hooks'])) {
-			$options['hooks'] = new Requests_Hooks();
+			$options['hooks'] = new Requests_Hooks(); //初始化
 		}
 
 		if (is_array($options['auth'])) {
@@ -516,7 +516,7 @@ class Requests {
 
 		if ($options['idn'] !== false) {
 			$iri = new Requests_IRI($url);
-			$iri->host = Requests_IDNAEncoder::encode($iri->ihost);
+			$iri->host = Requests_IDNAEncoder::encode($iri->ihost); //........
 			$url = $iri->uri;
 		}
 	}
@@ -537,7 +537,7 @@ class Requests {
 	 */
 	protected static function parse_response($headers, $url, $req_headers, $req_data, $options) {
 		$return = new Requests_Response();
-		if (!$options['blocking']) {
+		if (!$options['blocking']) { //异步
 			return $return;
 		}
 
@@ -570,7 +570,7 @@ class Requests {
 			$return->success = true;
 		}
 
-		foreach ($headers as $header) {
+		foreach ($headers as $header) { //header解析
 			list($key, $value) = explode(':', $header, 2);
 			$value = trim($value);
 			preg_replace('#(\s+)#i', ' ', $value);
@@ -592,7 +592,7 @@ class Requests {
 		$options['hooks']->dispatch('requests.before_redirect_check', array(&$return, $req_headers, $req_data, $options));
 
 		if ((in_array($return->status_code, array(300, 301, 302, 303, 307)) || $return->status_code > 307 && $return->status_code < 400) && $options['follow_redirects'] === true) {
-			if (isset($return->headers['location']) && $options['redirected'] < $options['redirects']) {
+			if (isset($return->headers['location']) && $options['redirected'] < $options['redirects']) { //30x跳转
 				if ($return->status_code === 303) {
 					$options['type'] = Requests::GET;
 				}
@@ -685,7 +685,7 @@ class Requests {
 	 * @param array $array Dictionary of header values
 	 * @return array List of headers
 	 */
-	public static function flatten($array) {
+	public static function flatten($array) { //格式转换
 		$return = array();
 		foreach ($array as $key => $value) {
 			$return[] = "$key: $value";
@@ -714,7 +714,7 @@ class Requests {
 	 * @param string $data Compressed data in one of the above formats
 	 * @return string Decompressed string
 	 */
-	public static function decompress($data) {
+	public static function decompress($data) { //解压
 		if (substr($data, 0, 2) !== "\x1f\x8b" && substr($data, 0, 2) !== "\x78\x9c") {
 			// Not actually compressed. Probably cURL ruining this for us.
 			return $data;

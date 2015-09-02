@@ -12,7 +12,7 @@
  * @package Requests
  * @subpackage Transport
  */
-class Requests_Transport_cURL implements Requests_Transport {
+class Requests_Transport_cURL implements Requests_Transport { //ok
 	const CURL_7_10_5 = 0x070A05;
 	const CURL_7_16_2 = 0x071002;
 
@@ -56,7 +56,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	 *
 	 * @var resource
 	 */
-	protected $stream_handle;
+	protected $stream_handle; //文件
 
 	/**
 	 * Constructor
@@ -64,7 +64,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 	public function __construct() {
 		$curl = curl_version();
 		$this->version = $curl['version_number'];
-		$this->fp = curl_init();
+		$this->fp = curl_init(); //curl 句柄
 
 		curl_setopt($this->fp, CURLOPT_HEADER, false);
 		curl_setopt($this->fp, CURLOPT_RETURNTRANSFER, 1);
@@ -75,7 +75,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 			curl_setopt($this->fp, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 		}
 		if (defined('CURLOPT_REDIR_PROTOCOLS')) {
-			curl_setopt($this->fp, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+			curl_setopt($this->fp, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS); //基本curl处理
 		}
 	}
 
@@ -93,14 +93,14 @@ class Requests_Transport_cURL implements Requests_Transport {
 	public function request($url, $headers = array(), $data = array(), $options = array()) {
 		$this->setup_handle($url, $headers, $data, $options);
 
-		$options['hooks']->dispatch('curl.before_send', array(&$this->fp));
+		$options['hooks']->dispatch('curl.before_send', array(&$this->fp)); //触发before_send
 
 		if ($options['filename'] !== false) {
-			$this->stream_handle = fopen($options['filename'], 'wb');
+			$this->stream_handle = fopen($options['filename'], 'wb'); //文件
 			curl_setopt($this->fp, CURLOPT_FILE, $this->stream_handle);
 		}
 
-		if (isset($options['verify'])) {
+		if (isset($options['verify'])) { //ssl
 			if ($options['verify'] === false) {
 				curl_setopt($this->fp, CURLOPT_SSL_VERIFYHOST, 0);
 				curl_setopt($this->fp, CURLOPT_SSL_VERIFYPEER, 0);
@@ -114,7 +114,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 			curl_setopt($this->fp, CURLOPT_SSL_VERIFYHOST, 0);
 		}
 
-		$response = curl_exec($this->fp);
+		$response = curl_exec($this->fp); //请求
 
 		$options['hooks']->dispatch('curl.after_send', array(&$fake_headers));
 
@@ -123,13 +123,13 @@ class Requests_Transport_cURL implements Requests_Transport {
 			$response = curl_exec($this->fp);
 		}
 
-		$this->process_response($response, $options);
+		$this->process_response($response, $options); //响应解析
 		curl_close($this->fp);
 		return $this->headers;
 	}
 
 	/**
-	 * Send multiple requests simultaneously
+	 * Send multiple requests simultaneously  同步处理逻辑
 	 *
 	 * @param array $requests Request data
 	 * @param array $options Global options
@@ -142,10 +142,10 @@ class Requests_Transport_cURL implements Requests_Transport {
 
 		$class = get_class($this);
 		foreach ($requests as $id => $request) {
-			$subrequests[$id] = new $class();
+			$subrequests[$id] = new $class(); //实例化多个Requests_Transport_cURL，获得过个curl句柄
 			$subhandles[$id] = $subrequests[$id]->get_subrequest_handle($request['url'], $request['headers'], $request['data'], $request['options']);
 			$request['options']['hooks']->dispatch('curl.before_multi_add', array(&$subhandles[$id]));
-			curl_multi_add_handle($multihandle, $subhandles[$id]);
+			curl_multi_add_handle($multihandle, $subhandles[$id]); //添加句柄
 		}
 
 		$completed = 0;
@@ -159,7 +159,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 			do {
 				$status = curl_multi_exec($multihandle, $active);
 			}
-			while ($status === CURLM_CALL_MULTI_PERFORM);
+			while ($status === CURLM_CALL_MULTI_PERFORM); //还有句柄数据在传输，全部请求完才有结果。
 
 			$to_process = array();
 
@@ -172,13 +172,13 @@ class Requests_Transport_cURL implements Requests_Transport {
 			}
 
 			// Parse the finished requests before we start getting the new ones
-			foreach ($to_process as $key => $done) {
+			foreach ($to_process as $key => $done) { //处理各个请求响应
 				$options = $requests[$key]['options'];
 				$responses[$key] = $subrequests[$key]->process_response(curl_multi_getcontent($done['handle']), $options);
 
 				$options['hooks']->dispatch('transport.internal.parse_response', array(&$responses[$key], $requests[$key]));
 
-				curl_multi_remove_handle($multihandle, $done['handle']);
+				curl_multi_remove_handle($multihandle, $done['handle']); //处理完关闭
 				curl_close($done['handle']);
 
 				if (!is_string($responses[$key])) {
@@ -191,9 +191,9 @@ class Requests_Transport_cURL implements Requests_Transport {
 
 		$request['options']['hooks']->dispatch('curl.after_multi_exec', array(&$multihandle));
 
-		curl_multi_close($multihandle);
+		curl_multi_close($multihandle); //都处理完 关闭
 
-		return $responses;
+		return $responses; //核心是全部请求回来分别处理所有请求的响应。
 	}
 
 	/**
@@ -225,11 +225,11 @@ class Requests_Transport_cURL implements Requests_Transport {
 	 * @param array $options Request options, see {@see Requests::response()} for documentation
 	 */
 	protected function setup_handle($url, $headers, $data, $options) {
-		$options['hooks']->dispatch('curl.before_request', array(&$this->fp));
+		$options['hooks']->dispatch('curl.before_request', array(&$this->fp)); //触发before_request
 
 		$headers = Requests::flatten($headers);
 		if (in_array($options['type'], array(Requests::HEAD, Requests::GET, Requests::DELETE)) & !empty($data)) {
-			$url = self::format_get($url, $data);
+			$url = self::format_get($url, $data); //动词判断
 		}
 		elseif (!empty($data) && !is_string($data)) {
 			$data = http_build_query($data, null, '&');
@@ -254,7 +254,7 @@ class Requests_Transport_cURL implements Requests_Transport {
 		}
 
 		if( is_int($options['timeout']) or $this->version < self::CURL_7_16_2 ) {
-			curl_setopt($this->fp, CURLOPT_TIMEOUT, ceil($options['timeout']));
+			curl_setopt($this->fp, CURLOPT_TIMEOUT, ceil($options['timeout'])); //超时设置
 		} else {
 			curl_setopt($this->fp, CURLOPT_TIMEOUT_MS, round($options['timeout'] * 1000) );
 		}
@@ -265,18 +265,18 @@ class Requests_Transport_cURL implements Requests_Transport {
 		}
 		curl_setopt($this->fp, CURLOPT_URL, $url);
 		curl_setopt($this->fp, CURLOPT_REFERER, $url);
-		curl_setopt($this->fp, CURLOPT_USERAGENT, $options['useragent']);
+		curl_setopt($this->fp, CURLOPT_USERAGENT, $options['useragent']); //ua设置
 		curl_setopt($this->fp, CURLOPT_HTTPHEADER, $headers);
 
 		if (true === $options['blocking']) {
-			curl_setopt($this->fp, CURLOPT_HEADERFUNCTION, array(&$this, 'stream_headers'));
+			curl_setopt($this->fp, CURLOPT_HEADERFUNCTION, array(&$this, 'stream_headers')); //阻塞处理
 		}
 	}
 
 	public function process_response($response, $options) {
 		if ($options['blocking'] === false) {
 			$fake_headers = '';
-			$options['hooks']->dispatch('curl.after_request', array(&$fake_headers));
+			$options['hooks']->dispatch('curl.after_request', array(&$fake_headers)); //异步
 			return false;
 		}
 		if ($options['filename'] !== false) {

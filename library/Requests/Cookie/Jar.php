@@ -12,7 +12,7 @@
  * @package Requests
  * @subpackage Cookies
  */
-class Requests_Cookie_Jar implements ArrayAccess, IteratorAggregate {
+class Requests_Cookie_Jar implements ArrayAccess, IteratorAggregate { //ok
 	/**
 	 * Actual item data
 	 *
@@ -40,7 +40,7 @@ class Requests_Cookie_Jar implements ArrayAccess, IteratorAggregate {
 			return $cookie;
 		}
 
-		return Requests_Cookie::parse($cookie, $key);
+		return Requests_Cookie::parse($cookie, $key); //处理为Requests_Cookie
 	}
 
 	/**
@@ -131,12 +131,12 @@ class Requests_Cookie_Jar implements ArrayAccess, IteratorAggregate {
 			foreach ($this->cookies as $key => $cookie) {
 				$cookie = $this->normalizeCookie($cookie, $key);
 
-				if ( $cookie->domainMatches( $url->host ) ) {
+				if ( $cookie->domainMatches( $url->host ) ) { //匹配url
 					$cookies[] = $cookie->formatForHeader();
 				}
 			}
 
-			$headers['Cookie'] = implode('; ', $cookies);
+			$headers['Cookie'] = implode('; ', $cookies); //放headers里面
 		}
 	}
 

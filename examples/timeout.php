@@ -8,7 +8,7 @@ Requests::register_autoloader();
 
 // Define a timeout of 2.5 seconds
 $options = array(
-	'timeout' => 2.5,
+	'timeout' => 2.5, //超时设置
 );
 
 // Now let's make a request to a page that will delay its response by 3 seconds

@@ -15,7 +15,7 @@
  * @package Requests
  * @subpackage Authentication
  */
-class Requests_Auth_Basic implements Requests_Auth {
+class Requests_Auth_Basic implements Requests_Auth { //处理basic HTTP authentication，注册curl.before_send、fsockopen.after_headers2个事件来curl_setopt或拼接header。
 	/**
 	 * Username
 	 *
@@ -42,7 +42,7 @@ class Requests_Auth_Basic implements Requests_Auth {
 				throw new Requests_Exception('Invalid number of arguments', 'authbasicbadargs');
 			}
 
-			list($this->user, $this->pass) = $args;
+			list($this->user, $this->pass) = $args; //取user pass
 		}
 	}
 

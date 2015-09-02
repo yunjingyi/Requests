@@ -72,7 +72,7 @@ class Requests_Cookie {
 	 * @param Requests_IRI $uri URI to check
 	 * @return boolean Whether the cookie is valid for the given URI
 	 */
-	public function uriMatches(Requests_IRI $uri) {
+	public function uriMatches(Requests_IRI $uri) { //cookie url处理
 		if (!$this->domainMatches($uri->host)) {
 			return false;
 		}

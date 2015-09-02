@@ -1,2 +1,3 @@
 # Ignore coverage report
 tests/coverage/*
+.idea/

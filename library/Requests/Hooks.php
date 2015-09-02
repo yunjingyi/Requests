@@ -12,7 +12,7 @@
  * @package Requests
  * @subpackage Utilities
  */
-class Requests_Hooks implements Requests_Hooker {
+class Requests_Hooks implements Requests_Hooker { //ok
 	/**
 	 * Constructor
 	 */
@@ -27,7 +27,7 @@ class Requests_Hooks implements Requests_Hooker {
 	 * @param callback $callback Function/method to call on event
 	 * @param int $priority Priority number. <0 is executed earlier, >0 is executed later
 	 */
-	public function register($hook, $callback, $priority = 0) {
+	public function register($hook, $callback, $priority = 0) { //优先级
 		if (!isset($this->hooks[$hook])) {
 			$this->hooks[$hook] = array();
 		}
